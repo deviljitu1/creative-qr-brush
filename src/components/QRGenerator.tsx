@@ -11,19 +11,19 @@ import { toast } from "sonner";
 
 export const QRGenerator = () => {
   const [text, setText] = useState("https://lovable.dev");
-  const [fgColor, setFgColor] = useState("#8b5cf6");
-  const [bgColor, setBgColor] = useState("#ffffff");
+  const [backgroundImage, setBackgroundImage] = useState<string>("");
   const [dotType, setDotType] = useState<"rounded" | "dots" | "classy" | "square">("rounded");
   const [cornerType, setCornerType] = useState<"square" | "dot" | "extra-rounded">("extra-rounded");
   const [logoImage, setLogoImage] = useState<string>("");
   const [errorLevel, setErrorLevel] = useState<"L" | "M" | "Q" | "H">("M");
   const [size, setSize] = useState(300);
+  const [qrOpacity, setQrOpacity] = useState(0.8);
   
   const qrCode = useRef<QRCodeStyling | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    qrCode.current = new QRCodeStyling({
+    const config: any = {
       width: size,
       height: size,
       data: text,
@@ -40,22 +40,62 @@ export const QRGenerator = () => {
         crossOrigin: "anonymous",
       },
       dotsOptions: {
-        color: fgColor,
         type: dotType,
       },
-      backgroundOptions: {
-        color: bgColor,
-      },
       cornersSquareOptions: {
-        color: fgColor,
         type: cornerType,
       },
       cornersDotOptions: {
-        color: fgColor,
         type: "dot",
       },
       image: logoImage || undefined,
-    });
+    };
+
+    if (backgroundImage) {
+      config.backgroundOptions = {
+        gradient: {
+          type: "radial",
+          rotation: 0,
+          colorStops: [
+            { offset: 0, color: "rgba(255, 255, 255, 0)" },
+            { offset: 1, color: "rgba(255, 255, 255, 0)" },
+          ],
+        },
+      };
+      config.dotsOptions.gradient = {
+        type: "linear",
+        rotation: 0,
+        colorStops: [
+          { offset: 0, color: `rgba(0, 0, 0, ${qrOpacity})` },
+          { offset: 1, color: `rgba(0, 0, 0, ${qrOpacity})` },
+        ],
+      };
+      config.cornersSquareOptions.gradient = {
+        type: "linear",
+        rotation: 0,
+        colorStops: [
+          { offset: 0, color: `rgba(0, 0, 0, ${qrOpacity})` },
+          { offset: 1, color: `rgba(0, 0, 0, ${qrOpacity})` },
+        ],
+      };
+      config.cornersDotOptions.gradient = {
+        type: "linear",
+        rotation: 0,
+        colorStops: [
+          { offset: 0, color: `rgba(0, 0, 0, ${qrOpacity})` },
+          { offset: 1, color: `rgba(0, 0, 0, ${qrOpacity})` },
+        ],
+      };
+    } else {
+      config.backgroundOptions = {
+        color: "#ffffff",
+      };
+      config.dotsOptions.color = "#8b5cf6";
+      config.cornersSquareOptions.color = "#8b5cf6";
+      config.cornersDotOptions.color = "#8b5cf6";
+    }
+
+    qrCode.current = new QRCodeStyling(config);
 
     if (canvasRef.current) {
       canvasRef.current.innerHTML = "";
@@ -65,7 +105,7 @@ export const QRGenerator = () => {
 
   useEffect(() => {
     if (qrCode.current) {
-      qrCode.current.update({
+      const updateConfig: any = {
         data: text,
         width: size,
         height: size,
@@ -73,24 +113,64 @@ export const QRGenerator = () => {
           errorCorrectionLevel: errorLevel,
         },
         dotsOptions: {
-          color: fgColor,
           type: dotType,
         },
-        backgroundOptions: {
-          color: bgColor,
-        },
         cornersSquareOptions: {
-          color: fgColor,
           type: cornerType,
         },
         cornersDotOptions: {
-          color: fgColor,
           type: "dot",
         },
         image: logoImage || undefined,
-      });
+      };
+
+      if (backgroundImage) {
+        updateConfig.backgroundOptions = {
+          gradient: {
+            type: "radial",
+            rotation: 0,
+            colorStops: [
+              { offset: 0, color: "rgba(255, 255, 255, 0)" },
+              { offset: 1, color: "rgba(255, 255, 255, 0)" },
+            ],
+          },
+        };
+        updateConfig.dotsOptions.gradient = {
+          type: "linear",
+          rotation: 0,
+          colorStops: [
+            { offset: 0, color: `rgba(0, 0, 0, ${qrOpacity})` },
+            { offset: 1, color: `rgba(0, 0, 0, ${qrOpacity})` },
+          ],
+        };
+        updateConfig.cornersSquareOptions.gradient = {
+          type: "linear",
+          rotation: 0,
+          colorStops: [
+            { offset: 0, color: `rgba(0, 0, 0, ${qrOpacity})` },
+            { offset: 1, color: `rgba(0, 0, 0, ${qrOpacity})` },
+          ],
+        };
+        updateConfig.cornersDotOptions.gradient = {
+          type: "linear",
+          rotation: 0,
+          colorStops: [
+            { offset: 0, color: `rgba(0, 0, 0, ${qrOpacity})` },
+            { offset: 1, color: `rgba(0, 0, 0, ${qrOpacity})` },
+          ],
+        };
+      } else {
+        updateConfig.backgroundOptions = {
+          color: "#ffffff",
+        };
+        updateConfig.dotsOptions.color = "#8b5cf6";
+        updateConfig.cornersSquareOptions.color = "#8b5cf6";
+        updateConfig.cornersDotOptions.color = "#8b5cf6";
+      }
+
+      qrCode.current.update(updateConfig);
     }
-  }, [text, fgColor, bgColor, dotType, cornerType, logoImage, errorLevel, size]);
+  }, [text, dotType, cornerType, logoImage, errorLevel, size, backgroundImage, qrOpacity]);
 
   const handleDownload = () => {
     if (qrCode.current) {
@@ -127,7 +207,19 @@ export const QRGenerator = () => {
     }
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBackgroundImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setBackgroundImage(event.target?.result as string);
+        toast.success("Background image uploaded!");
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleLogoImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
@@ -162,43 +254,47 @@ export const QRGenerator = () => {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="fgColor">Foreground Color</Label>
-                <div className="flex gap-2 mt-1.5">
-                  <Input
-                    id="fgColor"
-                    type="color"
-                    value={fgColor}
-                    onChange={(e) => setFgColor(e.target.value)}
-                    className="w-16 h-10 p-1 cursor-pointer"
-                  />
-                  <Input
-                    value={fgColor}
-                    onChange={(e) => setFgColor(e.target.value)}
-                    placeholder="#000000"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="bgColor">Background Color</Label>
-                <div className="flex gap-2 mt-1.5">
-                  <Input
-                    id="bgColor"
-                    type="color"
-                    value={bgColor}
-                    onChange={(e) => setBgColor(e.target.value)}
-                    className="w-16 h-10 p-1 cursor-pointer"
-                  />
-                  <Input
-                    value={bgColor}
-                    onChange={(e) => setBgColor(e.target.value)}
-                    placeholder="#ffffff"
-                  />
-                </div>
+            <div>
+              <Label htmlFor="backgroundImage">Background Image (Optional)</Label>
+              <div className="mt-1.5 space-y-2">
+                <Input
+                  id="backgroundImage"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleBackgroundImageUpload}
+                  className="cursor-pointer"
+                />
+                {backgroundImage && (
+                  <div className="flex gap-2 items-center">
+                    <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-border">
+                      <img src={backgroundImage} alt="Background preview" className="w-full h-full object-cover" />
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setBackgroundImage("")}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
+
+            {backgroundImage && (
+              <div>
+                <Label htmlFor="qrOpacity">QR Code Opacity: {Math.round(qrOpacity * 100)}%</Label>
+                <Slider
+                  id="qrOpacity"
+                  value={[qrOpacity]}
+                  onValueChange={(value) => setQrOpacity(value[0])}
+                  min={0.3}
+                  max={1}
+                  step={0.1}
+                  className="mt-2"
+                />
+              </div>
+            )}
 
             <div>
               <Label htmlFor="dotType">Dot Style</Label>
@@ -258,26 +354,30 @@ export const QRGenerator = () => {
             </div>
 
             <div>
-              <Label htmlFor="logo">Logo Image (Optional)</Label>
-              <div className="mt-1.5">
+              <Label htmlFor="logo">Center Logo (Optional)</Label>
+              <div className="mt-1.5 space-y-2">
                 <Input
                   id="logo"
                   type="file"
                   accept="image/*"
-                  onChange={handleImageUpload}
+                  onChange={handleLogoImageUpload}
                   className="cursor-pointer"
                 />
+                {logoImage && (
+                  <div className="flex gap-2 items-center">
+                    <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-border">
+                      <img src={logoImage} alt="Logo preview" className="w-full h-full object-cover" />
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setLogoImage("")}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                )}
               </div>
-              {logoImage && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setLogoImage("")}
-                  className="mt-2"
-                >
-                  Remove Logo
-                </Button>
-              )}
             </div>
           </div>
         </div>
@@ -289,10 +389,12 @@ export const QRGenerator = () => {
             <h3 className="text-xl font-semibold">Preview</h3>
             <div
               ref={canvasRef}
-              className="flex items-center justify-center bg-muted rounded-lg p-8 min-h-[300px]"
+              className="flex items-center justify-center rounded-lg p-8 min-h-[300px] relative overflow-hidden"
               style={{ 
                 boxShadow: "var(--shadow-elegant)",
-                background: "var(--gradient-subtle)"
+                background: backgroundImage ? `url(${backgroundImage})` : "var(--gradient-subtle)",
+                backgroundSize: "cover",
+                backgroundPosition: "center"
               }}
             />
           </div>
