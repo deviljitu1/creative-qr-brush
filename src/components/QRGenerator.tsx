@@ -34,9 +34,10 @@ export const QRGenerator = () => {
         errorCorrectionLevel: errorLevel,
       },
       imageOptions: {
-        hideBackgroundDots: true,
-        imageSize: 0.4,
-        margin: 5,
+        hideBackgroundDots: false,
+        imageSize: 0.3,
+        margin: 8,
+        crossOrigin: "anonymous",
       },
       dotsOptions: {
         color: fgColor,
@@ -93,8 +94,25 @@ export const QRGenerator = () => {
 
   const handleDownload = () => {
     if (qrCode.current) {
-      qrCode.current.download({ name: "artistic-qr-code", extension: "png" });
-      toast.success("QR Code downloaded!");
+      // Temporarily update to 8K for download
+      qrCode.current.update({
+        width: 8000,
+        height: 8000,
+      });
+      
+      qrCode.current.download({ name: "artistic-qr-code-8k", extension: "png" });
+      
+      // Restore original size after a short delay
+      setTimeout(() => {
+        if (qrCode.current) {
+          qrCode.current.update({
+            width: size,
+            height: size,
+          });
+        }
+      }, 500);
+      
+      toast.success("8K QR Code downloaded!");
     }
   };
 
@@ -227,7 +245,7 @@ export const QRGenerator = () => {
             </div>
 
             <div>
-              <Label htmlFor="size">Size: {size}px</Label>
+              <Label htmlFor="size">Preview Size: {size}px (Downloads at 8K)</Label>
               <Slider
                 id="size"
                 value={[size]}
