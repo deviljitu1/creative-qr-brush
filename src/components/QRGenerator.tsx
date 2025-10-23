@@ -12,6 +12,8 @@ import { toast } from "sonner";
 export const QRGenerator = () => {
   const [text, setText] = useState("https://lovable.dev");
   const [backgroundImage, setBackgroundImage] = useState<string>("");
+  const [fgColor, setFgColor] = useState("#8b5cf6");
+  const [bgColor, setBgColor] = useState("#ffffff");
   const [dotType, setDotType] = useState<"rounded" | "dots" | "classy" | "square">("rounded");
   const [cornerType, setCornerType] = useState<"square" | "dot" | "extra-rounded">("extra-rounded");
   const [logoImage, setLogoImage] = useState<string>("");
@@ -86,14 +88,14 @@ export const QRGenerator = () => {
           { offset: 1, color: `rgba(0, 0, 0, ${qrOpacity})` },
         ],
       };
-    } else {
-      config.backgroundOptions = {
-        color: "#ffffff",
-      };
-      config.dotsOptions.color = "#8b5cf6";
-      config.cornersSquareOptions.color = "#8b5cf6";
-      config.cornersDotOptions.color = "#8b5cf6";
-    }
+      } else {
+        config.backgroundOptions = {
+          color: bgColor,
+        };
+        config.dotsOptions.color = fgColor;
+        config.cornersSquareOptions.color = fgColor;
+        config.cornersDotOptions.color = fgColor;
+      }
 
     qrCode.current = new QRCodeStyling(config);
 
@@ -161,16 +163,16 @@ export const QRGenerator = () => {
         };
       } else {
         updateConfig.backgroundOptions = {
-          color: "#ffffff",
+          color: bgColor,
         };
-        updateConfig.dotsOptions.color = "#8b5cf6";
-        updateConfig.cornersSquareOptions.color = "#8b5cf6";
-        updateConfig.cornersDotOptions.color = "#8b5cf6";
+        updateConfig.dotsOptions.color = fgColor;
+        updateConfig.cornersSquareOptions.color = fgColor;
+        updateConfig.cornersDotOptions.color = fgColor;
       }
 
       qrCode.current.update(updateConfig);
     }
-  }, [text, dotType, cornerType, logoImage, errorLevel, size, backgroundImage, qrOpacity]);
+  }, [text, dotType, cornerType, logoImage, errorLevel, size, backgroundImage, qrOpacity, fgColor, bgColor]);
 
   const handleDownload = () => {
     if (qrCode.current) {
@@ -232,12 +234,12 @@ export const QRGenerator = () => {
   };
 
   return (
-    <div className="grid lg:grid-cols-2 gap-8 w-full max-w-7xl mx-auto p-6">
-      <Card className="p-6 space-y-6 bg-card border-border">
+    <div className="grid lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 w-full max-w-7xl mx-auto p-3 sm:p-4 lg:p-6">
+      <Card className="p-4 sm:p-6 space-y-4 sm:space-y-6 bg-card border-border">
         <div className="space-y-2">
-          <div className="flex items-center gap-2 mb-4">
-            <Sparkles className="w-5 h-5 text-primary" />
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+            <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               Customize Your QR
             </h2>
           </div>
@@ -262,11 +264,11 @@ export const QRGenerator = () => {
                   type="file"
                   accept="image/*"
                   onChange={handleBackgroundImageUpload}
-                  className="cursor-pointer"
+                  className="cursor-pointer text-sm"
                 />
                 {backgroundImage && (
                   <div className="flex gap-2 items-center">
-                    <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-border">
+                    <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border border-border">
                       <img src={backgroundImage} alt="Background preview" className="w-full h-full object-cover" />
                     </div>
                     <Button
@@ -280,6 +282,56 @@ export const QRGenerator = () => {
                 )}
               </div>
             </div>
+
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              <div>
+                <Label htmlFor="fgColor" className="text-sm">QR Code Color</Label>
+                <div className="flex gap-2 mt-1.5">
+                  <Input
+                    id="fgColor"
+                    type="color"
+                    value={fgColor}
+                    onChange={(e) => setFgColor(e.target.value)}
+                    className="w-12 sm:w-16 h-10 p-1 cursor-pointer"
+                    disabled={!!backgroundImage}
+                  />
+                  <Input
+                    value={fgColor}
+                    onChange={(e) => setFgColor(e.target.value)}
+                    placeholder="#8b5cf6"
+                    className="text-sm"
+                    disabled={!!backgroundImage}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="bgColor" className="text-sm">Background Color</Label>
+                <div className="flex gap-2 mt-1.5">
+                  <Input
+                    id="bgColor"
+                    type="color"
+                    value={bgColor}
+                    onChange={(e) => setBgColor(e.target.value)}
+                    className="w-12 sm:w-16 h-10 p-1 cursor-pointer"
+                    disabled={!!backgroundImage}
+                  />
+                  <Input
+                    value={bgColor}
+                    onChange={(e) => setBgColor(e.target.value)}
+                    placeholder="#ffffff"
+                    className="text-sm"
+                    disabled={!!backgroundImage}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {backgroundImage && (
+              <p className="text-xs text-muted-foreground">
+                Color options are disabled when using a background image
+              </p>
+            )}
 
             {backgroundImage && (
               <div>
@@ -383,13 +435,13 @@ export const QRGenerator = () => {
         </div>
       </Card>
 
-      <div className="space-y-6">
-        <Card className="p-8 bg-card border-border">
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold">Preview</h3>
+      <div className="space-y-4 sm:space-y-6">
+        <Card className="p-4 sm:p-6 lg:p-8 bg-card border-border">
+          <div className="space-y-3 sm:space-y-4">
+            <h3 className="text-lg sm:text-xl font-semibold">Preview</h3>
             <div
               ref={canvasRef}
-              className="flex items-center justify-center rounded-lg p-8 min-h-[300px] relative overflow-hidden"
+              className="flex items-center justify-center rounded-lg p-4 sm:p-6 lg:p-8 min-h-[250px] sm:min-h-[300px] relative overflow-hidden"
               style={{ 
                 boxShadow: "var(--shadow-elegant)",
                 background: backgroundImage ? `url(${backgroundImage})` : "var(--gradient-subtle)",
@@ -400,14 +452,14 @@ export const QRGenerator = () => {
           </div>
         </Card>
 
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <Button onClick={handleDownload} className="flex-1 bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-opacity">
             <Download className="w-4 h-4 mr-2" />
-            Download PNG
+            <span className="text-sm sm:text-base">Download PNG</span>
           </Button>
           <Button onClick={handleCopy} variant="outline" className="flex-1">
             <Copy className="w-4 h-4 mr-2" />
-            Copy
+            <span className="text-sm sm:text-base">Copy</span>
           </Button>
         </div>
       </div>
